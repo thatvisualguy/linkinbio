@@ -1177,6 +1177,7 @@ function applyBg() {
   const a = data.appearance;
   const bgType = a.bgType || 'solid';
   const body = document.body;
+  const html = document.documentElement;
 
   // Reset all bg properties
   body.style.backgroundImage = 'none';
@@ -1187,13 +1188,16 @@ function applyBg() {
 
   if (bgType === 'solid') {
     body.style.backgroundColor = a.bg || '#f5f3ef';
+    html.style.backgroundColor = a.bg || '#f5f3ef';
     adaptProfileText(a.bg || '#f5f3ef', false);
   } else if (bgType === 'gradient') {
     const from = a.bgGradFrom || '#f5f3ef';
     const to   = a.bgGradTo   || '#dce8f0';
     const dir  = a.bgGradDir  || 'to bottom';
     body.style.backgroundImage = `linear-gradient(${dir}, ${from}, ${to})`;
-    body.style.backgroundAttachment = 'fixed';
+    body.style.backgroundRepeat = 'no-repeat';
+    body.style.backgroundColor = to;
+    html.style.backgroundColor = to;
     adaptProfileText(from, false);
   } else if (bgType === 'image') {
     const url = a.bgImageUrl || '';
@@ -1202,10 +1206,11 @@ function applyBg() {
       body.style.backgroundSize     = a.bgImageSize || 'cover';
       body.style.backgroundPosition = a.bgImagePos  || 'center';
       body.style.backgroundRepeat   = 'no-repeat';
-      body.style.backgroundAttachment = 'fixed';
+      html.style.backgroundColor = '#555';
       adaptProfileText('#000000', true);
     } else {
       body.style.backgroundColor = '#f5f3ef';
+      html.style.backgroundColor = '#f5f3ef';
       adaptProfileText('#f5f3ef', false);
     }
   }
