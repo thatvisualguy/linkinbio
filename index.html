@@ -34,14 +34,14 @@
   }
 
   html, body {
-    height: 100dvh;
+    height: auto;
   }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: transparent;
+    background: var(--bg);
     color: var(--text);
-    min-height: 100dvh;
+    min-height: 100vh;
     line-height: 1.5;
   }
 
@@ -1176,56 +1176,38 @@ function applyTheme() {
 function applyBg() {
   const a = data.appearance;
   const bgType = a.bgType || 'solid';
-
-  let bgEl = document.getElementById('public-bg-layer');
-  if (!bgEl) {
-    bgEl = document.createElement('div');
-    bgEl.id = 'public-bg-layer';
-    bgEl.style.cssText = 'position:fixed;inset:0;z-index:-2;pointer-events:none;';
-    document.body.insertBefore(bgEl, document.body.firstChild);
-  }
-  bgEl.style.display = 'block';
-
-  const overlay = document.getElementById('bg-overlay');
-  if (overlay) overlay.style.display = 'none';
+  const body = document.body;
 
   // Reset all bg properties
-  bgEl.style.backgroundImage = 'none';
-  bgEl.style.backgroundSize = '';
-  bgEl.style.backgroundPosition = '';
-  bgEl.style.backgroundRepeat = '';
-  bgEl.style.backgroundColor = '';
-
-  // Set html background to prevent overscroll white flash
-  const solidFallback = bgType === 'solid' ? (a.bg || '#f5f3ef')
-                      : bgType === 'gradient' ? (a.bgGradFrom || '#f5f3ef')
-                      : (a.bgImageUrl ? '#555' : '#f5f3ef');
-  document.documentElement.style.backgroundColor = solidFallback;
-  document.body.style.backgroundColor = 'transparent';
+  body.style.backgroundImage = 'none';
+  body.style.backgroundSize = '';
+  body.style.backgroundPosition = '';
+  body.style.backgroundRepeat = '';
+  body.style.backgroundColor = '';
 
   if (bgType === 'solid') {
-    bgEl.style.backgroundColor = a.bg || '#f5f3ef';
+    body.style.backgroundColor = a.bg || '#f5f3ef';
     adaptProfileText(a.bg || '#f5f3ef', false);
   } else if (bgType === 'gradient') {
     const from = a.bgGradFrom || '#f5f3ef';
     const to   = a.bgGradTo   || '#dce8f0';
     const dir  = a.bgGradDir  || 'to bottom';
-    bgEl.style.backgroundImage = `linear-gradient(${dir}, ${from}, ${to})`;
+    body.style.backgroundImage = `linear-gradient(${dir}, ${from}, ${to})`;
+    body.style.backgroundAttachment = 'fixed';
     adaptProfileText(from, false);
   } else if (bgType === 'image') {
     const url = a.bgImageUrl || '';
     if (url) {
-      bgEl.style.backgroundImage    = `url(${url})`;
-      bgEl.style.backgroundSize     = a.bgImageSize || 'cover';
-      bgEl.style.backgroundPosition = a.bgImagePos  || 'center';
-      bgEl.style.backgroundRepeat   = 'no-repeat';
-      bgEl.style.backgroundColor    = '#555';
+      body.style.backgroundImage    = `url(${url})`;
+      body.style.backgroundSize     = a.bgImageSize || 'cover';
+      body.style.backgroundPosition = a.bgImagePos  || 'center';
+      body.style.backgroundRepeat   = 'no-repeat';
+      body.style.backgroundAttachment = 'fixed';
       adaptProfileText('#000000', true);
     } else {
-      bgEl.style.backgroundColor = '#f5f3ef';
+      body.style.backgroundColor = '#f5f3ef';
       adaptProfileText('#f5f3ef', false);
     }
-    if (overlay) overlay.style.display = a.bgImageOverlay ? 'block' : 'none';
   }
 }
 
