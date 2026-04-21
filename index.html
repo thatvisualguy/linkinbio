@@ -511,6 +511,37 @@
   .flex-between { display: flex; align-items: center; justify-content: space-between; }
   .gap-8 { gap: 8px; }
 
+  /* Socials */
+  .social-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .social-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    overflow: hidden;
+  }
+  .social-icon-btn img {
+    width: 22px;
+    height: 22px;
+  }
+  .social-icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
   @media (max-width: 480px) {
     #admin-page { padding: 20px 16px 80px; }
     .form-row { flex-direction: column; }
@@ -540,7 +571,9 @@
     <p class="profile-tagline" id="pub-tagline"></p>
     <p class="profile-bio" id="pub-bio"></p>
   </div>
+  <div id="pub-socials-above"></div>
   <div class="links-list" id="pub-links"></div>
+  <div id="pub-socials-below"></div>
   <div class="public-footer"></div>
 </div>
 
@@ -565,31 +598,64 @@
 
   <!-- LINKS TAB -->
   <div class="tab-panel active" id="tab-links">
-    <button class="btn btn-primary" style="margin-bottom:14px;width:100%" onclick="toggleAddForm()">+ Add link</button>
-
-    <div id="add-link-form">
-      <div class="form-row">
-        <div>
-          <label>Icon (emoji)</label>
-          <input type="text" id="new-icon" placeholder="🔗" maxlength="4" style="text-align:center;font-size:20px">
-        </div>
-        <div style="flex:3">
-          <label>Title</label>
-          <input type="text" id="new-title" placeholder="Link title">
-        </div>
-      </div>
-      <label>URL</label>
-      <input type="url" id="new-url" placeholder="https://" oninput="autoDetectIcon()">
-      <label style="display:flex;align-items:center;gap:8px;margin-top:14px">
-        <input type="checkbox" id="new-pinned"> Pin to top
-      </label>
-      <div class="flex-end" style="gap:8px;margin-top:14px">
-        <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()">Cancel</button>
-        <button class="btn btn-primary btn-sm" onclick="addLink()">Add link</button>
-      </div>
+    <!-- Sub-tabs: Other / Socials -->
+    <div style="display:flex;gap:4px;background:var(--border);border-radius:10px;padding:4px;margin-bottom:20px">
+      <button class="admin-tab active" id="sub-tab-other-btn" onclick="switchSubTab('other',this)">Other</button>
+      <button class="admin-tab" id="sub-tab-socials-btn" onclick="switchSubTab('socials',this)">Socials</button>
     </div>
 
-    <div id="links-admin-list"></div>
+    <!-- Other sub-panel -->
+    <div id="sub-tab-other">
+      <button class="btn btn-primary" style="margin-bottom:14px;width:100%" onclick="toggleAddForm()">+ Add link</button>
+
+      <div id="add-link-form">
+        <div class="form-row">
+          <div>
+            <label>Icon (emoji)</label>
+            <input type="text" id="new-icon" placeholder="🔗" maxlength="4" style="text-align:center;font-size:20px">
+          </div>
+          <div style="flex:3">
+            <label>Title</label>
+            <input type="text" id="new-title" placeholder="Link title">
+          </div>
+        </div>
+        <label>URL</label>
+        <input type="url" id="new-url" placeholder="https://" oninput="autoDetectIcon()">
+        <label style="display:flex;align-items:center;gap:8px;margin-top:14px">
+          <input type="checkbox" id="new-pinned"> Pin to top
+        </label>
+        <div class="flex-end" style="gap:8px;margin-top:14px">
+          <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="addLink()">Add link</button>
+        </div>
+      </div>
+
+      <div id="links-admin-list"></div>
+    </div>
+
+    <!-- Socials sub-panel -->
+    <div id="sub-tab-socials" style="display:none">
+      <div class="card">
+        <div class="card-title">Display Position</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <div class="radius-opt" id="soc-pos-above" onclick="setSocialPosition('above',this)" style="flex:1">Above links</div>
+          <div class="radius-opt active" id="soc-pos-below" onclick="setSocialPosition('below',this)" style="flex:1">Below links</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add Social</div>
+        <label>Platform</label>
+        <select id="new-social-platform"></select>
+        <label>Profile URL</label>
+        <input type="url" id="new-social-url" placeholder="https://instagram.com/yourhandle">
+        <div class="flex-end" style="margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="addSocial()">Add</button>
+        </div>
+      </div>
+
+      <div id="socials-admin-list"></div>
+    </div>
   </div>
 
   <!-- PROFILE TAB -->
@@ -706,21 +772,24 @@
 
       <label>Display name font</label>
       <div style="display:flex;gap:8px">
-        <input type="text" id="font-name" placeholder="DM Serif Display" style="flex:1" oninput="previewTypography()">
+        <select id="font-name-sel" onchange="onFontSel('name')" style="flex:1"></select>
         <input type="color" id="color-name" value="#1a1a1a" style="width:40px;padding:2px 4px;flex-shrink:0" oninput="previewTypography()">
       </div>
+      <input type="text" id="font-name" placeholder="Custom font name..." style="display:none;margin-top:6px;flex:1" oninput="previewTypography()">
 
       <label>Tagline font</label>
       <div style="display:flex;gap:8px">
-        <input type="text" id="font-tagline" placeholder="DM Sans" style="flex:1" oninput="previewTypography()">
+        <select id="font-tagline-sel" onchange="onFontSel('tagline')" style="flex:1"></select>
         <input type="color" id="color-tagline" value="#888888" style="width:40px;padding:2px 4px;flex-shrink:0" oninput="previewTypography()">
       </div>
+      <input type="text" id="font-tagline" placeholder="Custom font name..." style="display:none;margin-top:6px;flex:1" oninput="previewTypography()">
 
       <label>Bio font</label>
       <div style="display:flex;gap:8px">
-        <input type="text" id="font-bio" placeholder="DM Sans" style="flex:1" oninput="previewTypography()">
+        <select id="font-bio-sel" onchange="onFontSel('bio')" style="flex:1"></select>
         <input type="color" id="color-bio" value="#888888" style="width:40px;padding:2px 4px;flex-shrink:0" oninput="previewTypography()">
       </div>
+      <input type="text" id="font-bio" placeholder="Custom font name..." style="display:none;margin-top:6px;flex:1" oninput="previewTypography()">
 
       <!-- Live preview -->
       <div id="typo-preview" style="margin-top:14px;padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border);text-align:center">
@@ -890,6 +959,8 @@ document.head.appendChild(QR_SCRIPT);
 let data = {
   profile: { photo: '', name: '', tagline: '', bio: '' },
   links: [],
+  socials: [],
+  socialPosition: 'below',
   appearance: { bg: '#f5f3ef', accent: '#1a1a1a', radius: '12px' },
   settings: { title: '', desc: '', ogImage: '', favicon: '', analytics: '', pwEnabled: false, pw: '', adminPw: '' },
   qrUrl: ''
@@ -900,6 +971,43 @@ let dragSrc = null;
 const FONT_CACHE = {};
 
 const ACCENT_PRESETS = ['#1a1a1a','#2d6a4f','#1d3557','#9b2226','#6d6875','#e07a5f','#3d405b','#81b29a'];
+
+const GOOGLE_FONTS_30 = ['Inter','Poppins','Roboto','Open Sans','Montserrat','Lato','Nunito','Raleway','Playfair Display','Merriweather','Oswald','DM Sans','DM Serif Display','Work Sans','Quicksand','Ubuntu','Josefin Sans','Crimson Text','Spectral','Cormorant Garamond','IBM Plex Sans','Libre Baskerville','Source Sans Pro','PT Sans','Barlow','Manrope','Space Grotesk','Mulish','Jost','Be Vietnam Pro'];
+
+const PLATFORMS = {
+  'Social': [
+    { id: 'instagram', label: 'Instagram' },
+    { id: 'tiktok', label: 'TikTok' },
+    { id: 'x', label: 'X (Twitter)' },
+    { id: 'facebook', label: 'Facebook' },
+    { id: 'threads', label: 'Threads' },
+    { id: 'snapchat', label: 'Snapchat' },
+    { id: 'pinterest', label: 'Pinterest' }
+  ],
+  'Professional': [
+    { id: 'linkedin', label: 'LinkedIn' },
+    { id: 'github', label: 'GitHub' }
+  ],
+  'Video': [
+    { id: 'youtube', label: 'YouTube' },
+    { id: 'twitch', label: 'Twitch' }
+  ],
+  'Messaging': [
+    { id: 'whatsapp', label: 'WhatsApp' },
+    { id: 'telegram', label: 'Telegram' },
+    { id: 'discord', label: 'Discord' }
+  ],
+  'Music/Audio': [
+    { id: 'spotify', label: 'Spotify' },
+    { id: 'soundcloud', label: 'SoundCloud' },
+    { id: 'applemusic', label: 'Apple Music' }
+  ],
+  'More': [
+    { id: 'patreon', label: 'Patreon' },
+    { id: 'substack', label: 'Substack' },
+    { id: 'medium', label: 'Medium' }
+  ]
+};
 
 const SUPABASE_URL = '%%SUPABASE_URL%%';
 const SUPABASE_ANON_KEY = '%%SUPABASE_ANON_KEY%%';
@@ -1034,10 +1142,12 @@ function importData(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      data = JSON.parse(ev.target.result);
+      const imported = JSON.parse(ev.target.result);
+      data = { ...data, ...imported };
       save();
       loadAdminFields();
       renderAdminLinks();
+      renderPublic();
       toast('Imported!');
     } catch { toast('Invalid file'); }
   };
@@ -1174,6 +1284,8 @@ function renderPublic() {
     `;
     list.appendChild(a);
   });
+
+  renderPublicSocials();
 }
 
 // ── ADMIN: LINKS ──
@@ -1299,6 +1411,122 @@ function saveEdit() {
   toast('Saved!');
 }
 
+// ── ADMIN: SOCIALS ──
+function switchSubTab(name, el) {
+  document.getElementById('sub-tab-other').style.display = name === 'other' ? 'block' : 'none';
+  document.getElementById('sub-tab-socials').style.display = name === 'socials' ? 'block' : 'none';
+  document.querySelectorAll('.admin-tabs .admin-tab').forEach(t => t.classList.remove('active'));
+  el.closest('.admin-tabs').querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t === el));
+  el.classList.add('active');
+}
+
+function buildPlatformSelect(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+  for (const [group, platforms] of Object.entries(PLATFORMS)) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = group;
+    platforms.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.label;
+      optgroup.appendChild(opt);
+    });
+    sel.appendChild(optgroup);
+  }
+}
+
+function addSocial() {
+  const platform = document.getElementById('new-social-platform').value.trim();
+  const url = document.getElementById('new-social-url').value.trim();
+  if (!platform || !url) { toast('Platform and URL required'); return; }
+  data.socials.push({ platform, url });
+  save();
+  renderAdminSocials();
+  document.getElementById('new-social-platform').value = '';
+  document.getElementById('new-social-url').value = '';
+  toast('Social added!');
+}
+
+function deleteSocial(i) {
+  if (!confirm('Delete this social?')) return;
+  data.socials.splice(i, 1);
+  save();
+  renderAdminSocials();
+  renderPublicSocials();
+  toast('Social deleted');
+}
+
+function renderAdminSocials() {
+  const list = document.getElementById('socials-admin-list');
+  list.innerHTML = '';
+  if (data.socials.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:13px;padding:24px">No socials yet. Add one above!</p>';
+    return;
+  }
+  data.socials.forEach((social, i) => {
+    const platform = Object.values(PLATFORMS).flat().find(p => p.id === social.platform);
+    const label = platform ? platform.label : social.platform;
+    const iconUrl = `https://cdn.simpleicons.org/${social.platform}/${getSocialIconColor()}`;
+    const div = document.createElement('div');
+    div.className = 'link-item';
+    div.innerHTML = `
+      <img src="${iconUrl}" alt="${label}" style="width:20px;height:20px;flex-shrink:0">
+      <div class="link-item-info">
+        <div class="link-item-title">${escHtml(label)}</div>
+        <div class="link-item-url">${escHtml(social.url)}</div>
+      </div>
+      <div class="link-item-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteSocial(${i})">✕</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function renderPublicSocials() {
+  const above = document.getElementById('pub-socials-above');
+  const below = document.getElementById('pub-socials-below');
+  above.innerHTML = '';
+  below.innerHTML = '';
+
+  if (data.socials.length === 0) return;
+
+  const grid = document.createElement('div');
+  grid.className = 'social-grid';
+
+  data.socials.forEach(social => {
+    const a = document.createElement('a');
+    a.className = 'social-icon-btn';
+    a.href = social.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    const iconUrl = `https://cdn.simpleicons.org/${social.platform}/${getSocialIconColor()}`;
+    a.innerHTML = `<img src="${iconUrl}" alt="${social.platform}" onerror="this.style.display='none'">`;
+    grid.appendChild(a);
+  });
+
+  const container = data.socialPosition === 'above' ? above : below;
+  container.appendChild(grid);
+}
+
+function setSocialPosition(val, el) {
+  document.querySelectorAll('#soc-pos-above, #soc-pos-below').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  data.socialPosition = val;
+  save();
+  renderPublicSocials();
+}
+
+function getSocialIconColor() {
+  const a = data.appearance;
+  const t = a.bgType || 'solid';
+  if (t === 'solid') return isLight(a.bg || '#f5f3ef') ? '000000' : 'ffffff';
+  if (t === 'gradient') return isLight(a.bgGradFrom || '#f5f3ef') ? '000000' : 'ffffff';
+  return 'ffffff';
+}
+
 // ── ADMIN: PROFILE ──
 function saveProfile() {
   const urlVal = document.getElementById('prof-photo').value.trim();
@@ -1394,13 +1622,20 @@ function saveAppearance() {
   }
   data.appearance.accent = document.getElementById('accent-color').value;
   // Typography
-  data.appearance.fontName    = document.getElementById('font-name').value.trim();
-  data.appearance.fontTagline = document.getElementById('font-tagline').value.trim();
-  data.appearance.fontBio     = document.getElementById('font-bio').value.trim();
+  data.appearance.fontName    = document.getElementById('font-name-sel').value === '__custom__'
+    ? document.getElementById('font-name').value.trim()
+    : document.getElementById('font-name-sel').value.trim();
+  data.appearance.fontTagline = document.getElementById('font-tagline-sel').value === '__custom__'
+    ? document.getElementById('font-tagline').value.trim()
+    : document.getElementById('font-tagline-sel').value.trim();
+  data.appearance.fontBio     = document.getElementById('font-bio-sel').value === '__custom__'
+    ? document.getElementById('font-bio').value.trim()
+    : document.getElementById('font-bio-sel').value.trim();
   data.appearance.colorName    = document.getElementById('color-name').value;
   data.appearance.colorTagline = document.getElementById('color-tagline').value;
   data.appearance.colorBio     = document.getElementById('color-bio').value;
   save();
+  renderPublic();
   toast('Appearance saved!');
 }
 
@@ -1484,13 +1719,20 @@ function loadAdminFields() {
 
   // Restore typography
   const typo = data.appearance;
-  document.getElementById('font-name').value    = typo.fontName    || '';
-  document.getElementById('font-tagline').value = typo.fontTagline || '';
-  document.getElementById('font-bio').value     = typo.fontBio     || '';
+  buildFontDropdown('font-name-sel', typo.fontName);
+  buildFontDropdown('font-tagline-sel', typo.fontTagline);
+  buildFontDropdown('font-bio-sel', typo.fontBio);
   document.getElementById('color-name').value    = typo.colorName    || '#1a1a1a';
   document.getElementById('color-tagline').value = typo.colorTagline || '#888888';
   document.getElementById('color-bio').value     = typo.colorBio     || '#888888';
   previewTypography();
+
+  // Restore socials
+  buildPlatformSelect('new-social-platform');
+  const socPos = data.socialPosition || 'below';
+  document.querySelectorAll('#soc-pos-above, #soc-pos-below').forEach(el => el.classList.remove('active'));
+  document.getElementById(socPos === 'above' ? 'soc-pos-above' : 'soc-pos-below').classList.add('active');
+  renderAdminSocials();
 
   const s = data.settings;
   document.getElementById('meta-title').value = s.title || '';
@@ -1936,10 +2178,49 @@ function applyTypography() {
   if (a.colorBio)     root.style.setProperty('--bio-color',     a.colorBio);
 }
 
+function buildFontDropdown(selectId, currentVal) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+  GOOGLE_FONTS_30.forEach(font => {
+    const opt = document.createElement('option');
+    opt.value = font;
+    opt.textContent = font;
+    if (font === currentVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  const customOpt = document.createElement('option');
+  customOpt.value = '__custom__';
+  customOpt.textContent = '✎ Custom font…';
+  if (currentVal && !GOOGLE_FONTS_30.includes(currentVal)) {
+    customOpt.selected = true;
+  }
+  sel.appendChild(customOpt);
+}
+
+function onFontSel(field) {
+  const sel = document.getElementById(`font-${field}-sel`);
+  const input = document.getElementById(`font-${field}`);
+  if (sel.value === '__custom__') {
+    input.style.display = 'block';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = sel.value;
+  }
+  previewTypography();
+}
+
 function previewTypography() {
-  const nameFont    = document.getElementById('font-name').value.trim();
-  const taglineFont = document.getElementById('font-tagline').value.trim();
-  const bioFont     = document.getElementById('font-bio').value.trim();
+  const nameFont    = document.getElementById('font-name-sel').value === '__custom__'
+    ? document.getElementById('font-name').value.trim()
+    : document.getElementById('font-name-sel').value.trim();
+  const taglineFont = document.getElementById('font-tagline-sel').value === '__custom__'
+    ? document.getElementById('font-tagline').value.trim()
+    : document.getElementById('font-tagline-sel').value.trim();
+  const bioFont     = document.getElementById('font-bio-sel').value === '__custom__'
+    ? document.getElementById('font-bio').value.trim()
+    : document.getElementById('font-bio-sel').value.trim();
   const nameColor    = document.getElementById('color-name').value;
   const taglineColor = document.getElementById('color-tagline').value;
   const bioColor     = document.getElementById('color-bio').value;
