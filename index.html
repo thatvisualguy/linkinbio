@@ -210,7 +210,7 @@
 
   .admin-tab {
     flex: 1;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border: none;
     background: transparent;
     border-radius: 7px;
@@ -223,9 +223,9 @@
   }
 
   .admin-tab.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: var(--text);
+    color: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   }
 
   .tab-panel { display: none; }
@@ -520,26 +520,19 @@
     margin: 16px 0;
   }
   .social-icon-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    box-shadow: var(--shadow);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition: transform 0.18s ease;
     overflow: hidden;
   }
   .social-icon-btn img {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
   }
   .social-icon-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+    transform: scale(1.1);
   }
 
   @media (max-width: 480px) {
@@ -1468,7 +1461,7 @@ function renderAdminSocials() {
   data.socials.forEach((social, i) => {
     const platform = Object.values(PLATFORMS).flat().find(p => p.id === social.platform);
     const label = platform ? platform.label : social.platform;
-    const iconUrl = `https://cdn.simpleicons.org/${social.platform}/${getSocialIconColor()}`;
+    const iconUrl = `https://cdn.simpleicons.org/${social.platform}/000000`;
     const div = document.createElement('div');
     div.className = 'link-item';
     div.innerHTML = `
